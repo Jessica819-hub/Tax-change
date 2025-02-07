@@ -1,0 +1,339 @@
+import pandas as pd
+
+# 原始数据格式转换（示例片段）
+raw_data = """
+8701.10.01	00  	Single axle tractors	
+No.
+Free 1/		Free 1/
+ 	Road tractors for semi-trailers:				
+8701.21.00	 	With only compression-ignition internal combustion piston engine (diesel or semi-diesel)		4% 1/	Free (A+, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+ 	New:				
+8701.21.00.15	15  	G.V.W. not exceeding 36,287 kg	
+No.
+8701.21.00.45	45  	G.V.W. exceeding 36,287 kg	
+No.
+8701.21.00.80	80  	Used	
+No.
+8701.22.00	 	With both compression-ignition internal combustion piston engine (diesel or semi-diesel) and electric motor as motors for propulsion		4% 1/	Free (A+, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+ 	New:				
+8701.22.00.15	15  	G.V.W. not exceeding 36,287 kg	
+No.
+8701.22.00.45	45  	G.V.W. exceeding 36,287 kg	
+No.
+8701.22.00.80	80  	Used	
+No.
+8701.23.00	 	With both spark-ignition internal combustion piston engine and electric motor as motors for propulsion		4% 1/	Free (A+, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+ 	New:				
+8701.23.00.15	15  	G.V.W. not exceeding 36,287 kg	
+No.
+8701.23.00.45	45  	G.V.W. exceeding 36,287 kg	
+No.
+8701.23.00.80	80  	Used	
+No.
+8701.24.00	 	With only electric motor for propulsion		4% 1/	Free (A+, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+ 	New:				
+8701.24.00.15	15  	G.V.W. not exceeding 36,287 kg	
+No.
+8701.24.00.45	45  	G.V.W. exceeding 36,287 kg	
+No.
+8701.24.00.80	80  	Used	
+No.
+8701.29.00	 	Other		4% 1/	Free (A+, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+ 	New:				
+8701.29.00.15	15  	G.V.W. not exceeding 36,287 kg	
+No.
+8701.29.00.45	45  	G.V.W. exceeding 36,287 kg	
+No.
+8701.29.00.80	80  	Used	
+No.
+8701.30	 	Track-laying tractors:				
+8701.30.10	 	Suitable for agricultural use		Free 1/		Free
+ 	New:				
+8701.30.10.15	15  	With a net engine power of less than 93.3 kW	
+No.
+8701.30.10.30	30  	With a net engine power of 93.3 kW or more but less than 119.4 kW	
+No.
+8701.30.10.45	45  	With a net engine power of 119.4 kW or more but less than 194 kW	
+No.
+8701.30.10.60	60  	With a net engine power of 194 kW or more but less than 257.4 kW	
+No.
+8701.30.10.75	75  	With a net engine power of 257.4 kW or more	
+No.
+8701.30.10.90	90  	Used	
+No.
+8701.30.50	 	Other		Free 1/		27.5%
+ 	New:				
+8701.30.50.15	15  	With a net engine power of less than 93.3 kW	
+No.
+8701.30.50.30	30  	With a net engine power of 93.3 kW or more but less than 119.4 kW	
+No.
+8701.30.50.45	45  	With a net engine power of 119.4 kW or more but less than 194 kW	
+No.
+8701.30.50.60	60  	With a net engine power of 194 kW or more but less than 257.4 kW	
+No.
+8701.30.50.75	75  	With a net engine power of 257.4 kW or more	
+No.
+8701.30.50.90	90  	Used	
+No.
+ 	Other, of an engine power:				
+8701.91	 	Not exceeding 18 kW:				
+8701.91.10	00  	For agricultural use	
+No.
+Free 1/		Free
+8701.91.50	00  	Other	
+No.
+Free 1/		27.5%
+8701.92	 	Exceeding 18 kW but not exceeding 37 kW:				
+8701.92.10	00  	Suitable for agricultural use	
+No.
+Free 1/		Free
+8701.92.50	00  	Other	
+No.
+Free 1/		27.5%
+8701.93	 	Exceeding 37 kW but not exceeding 75 kW:				
+8701.93.10	00  	Suitable for agricultural use	
+No.
+Free 1/		Free
+8701.93.50	00  	Other	
+No.
+Free 1/		27.5%
+8701.94	 	Exceeding 75 kW but not exceeding 130 kW:				
+8701.94.10	00  	Suitable for agricultural use	
+No.
+Free 1/		Free
+8701.94.50	00  	Other	
+No.
+Free 1/		27.5% 1/
+8701.95	 	Exceeding 130 kW:				
+8701.95.10	00  	Suitable for agricultural use	
+No.
+Free 1/		Free 1/
+8701.95.50	00  	Other	
+No.
+Free 1/		27.5%
+8702	 	Motor vehicles for the transport of ten or more persons, including the driver:				
+8702.10	 	With only compression-ignition internal combustion piston engine (diesel or semi-diesel):				
+8702.10.31	00  	Designed for the transport of 16 or more persons, including the driver	
+No.
+2% 1/	Free (A*, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.10.61	00  	Other	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.20	 	With both compression-ignition internal combustion piston engine (diesel or semi-diesel) and electric motor as motors for propulsion:				
+8702.20.31	00  	Designed for the transport of 16 or more persons, including the driver	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.20.61	00  	Other	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.30	 	With both spark-ignition internal combustion piston engine and electric motor as motors for propulsion:				
+8702.30.31	00  	Designed for the transport of 16 or more persons, including the driver	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.30.61	00  	Other	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.40	 	With only electric motor for propulsion:				
+8702.40.31	00  	Designed for the transport of 16 or more persons, including the driver	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.40.61	00  	Other	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.90	 	Other:				
+8702.90.31	00  	Designed for the transport of 16 or more persons, including the driver	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.90.61	00  	Other	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8703	 	Motor cars and other motor vehicles principally designed for the transport of persons (other than those of heading 8702), including station wagons and racing cars:				
+8703.10	 	Vehicles specially designed for traveling on snow; golf carts and similar vehicles:				
+8703.10.10	00  	Vehicles specially designed for traveling on snow	
+No.
+2.5% 1/	Free (A+, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	10%
+8703.10.50	 	Other		2.5% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	10% 1/
+8703.10.50.30	30  	Golf carts	
+No.
+8703.10.50.60	60  	Other	
+No.
+ 	Other vehicles, with only spark-ignition internal combustion piston engines:				
+8703.21.01	 	Of a cylinder capacity not exceeding 1,000 cc		2.5% 1/	Free (A+, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	10% 1/
+服务器繁忙，请稍后再试。
+
+从USITC关税数据库怎么获取以下信息？
+最惠国税率（MFN）
+USMCA优惠税率
+反倾销附加税
+关税数据库里数据如下：
+General	
+Special Click to view agreements information
+8701	 	Tractors (other than tractors of heading 8709):				
+8701.10.01	00  	Single axle tractors	
+No.
+Free 1/		Free 1/
+ 	Road tractors for semi-trailers:				
+8701.21.00	 	With only compression-ignition internal combustion piston engine (diesel or semi-diesel)		4% 1/	Free (A+, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+ 	New:				
+8701.21.00.15	15  	G.V.W. not exceeding 36,287 kg	
+No.
+8701.21.00.45	45  	G.V.W. exceeding 36,287 kg	
+No.
+8701.21.00.80	80  	Used	
+No.
+8701.22.00	 	With both compression-ignition internal combustion piston engine (diesel or semi-diesel) and electric motor as motors for propulsion		4% 1/	Free (A+, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+ 	New:				
+8701.22.00.15	15  	G.V.W. not exceeding 36,287 kg	
+No.
+8701.22.00.45	45  	G.V.W. exceeding 36,287 kg	
+No.
+8701.22.00.80	80  	Used	
+No.
+8701.23.00	 	With both spark-ignition internal combustion piston engine and electric motor as motors for propulsion		4% 1/	Free (A+, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+ 	New:				
+8701.23.00.15	15  	G.V.W. not exceeding 36,287 kg	
+No.
+8701.23.00.45	45  	G.V.W. exceeding 36,287 kg	
+No.
+8701.23.00.80	80  	Used	
+No.
+8701.24.00	 	With only electric motor for propulsion		4% 1/	Free (A+, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+ 	New:				
+8701.24.00.15	15  	G.V.W. not exceeding 36,287 kg	
+No.
+8701.24.00.45	45  	G.V.W. exceeding 36,287 kg	
+No.
+8701.24.00.80	80  	Used	
+No.
+8701.29.00	 	Other		4% 1/	Free (A+, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+ 	New:				
+8701.29.00.15	15  	G.V.W. not exceeding 36,287 kg	
+No.
+8701.29.00.45	45  	G.V.W. exceeding 36,287 kg	
+No.
+8701.29.00.80	80  	Used	
+No.
+8701.30	 	Track-laying tractors:				
+8701.30.10	 	Suitable for agricultural use		Free 1/		Free
+ 	New:				
+8701.30.10.15	15  	With a net engine power of less than 93.3 kW	
+No.
+8701.30.10.30	30  	With a net engine power of 93.3 kW or more but less than 119.4 kW	
+No.
+8701.30.10.45	45  	With a net engine power of 119.4 kW or more but less than 194 kW	
+No.
+8701.30.10.60	60  	With a net engine power of 194 kW or more but less than 257.4 kW	
+No.
+8701.30.10.75	75  	With a net engine power of 257.4 kW or more	
+No.
+8701.30.10.90	90  	Used	
+No.
+8701.30.50	 	Other		Free 1/		27.5%
+ 	New:				
+8701.30.50.15	15  	With a net engine power of less than 93.3 kW	
+No.
+8701.30.50.30	30  	With a net engine power of 93.3 kW or more but less than 119.4 kW	
+No.
+8701.30.50.45	45  	With a net engine power of 119.4 kW or more but less than 194 kW	
+No.
+8701.30.50.60	60  	With a net engine power of 194 kW or more but less than 257.4 kW	
+No.
+8701.30.50.75	75  	With a net engine power of 257.4 kW or more	
+No.
+8701.30.50.90	90  	Used	
+No.
+ 	Other, of an engine power:				
+8701.91	 	Not exceeding 18 kW:				
+8701.91.10	00  	For agricultural use	
+No.
+Free 1/		Free
+8701.91.50	00  	Other	
+No.
+Free 1/		27.5%
+8701.92	 	Exceeding 18 kW but not exceeding 37 kW:				
+8701.92.10	00  	Suitable for agricultural use	
+No.
+Free 1/		Free
+8701.92.50	00  	Other	
+No.
+Free 1/		27.5%
+8701.93	 	Exceeding 37 kW but not exceeding 75 kW:				
+8701.93.10	00  	Suitable for agricultural use	
+No.
+Free 1/		Free
+8701.93.50	00  	Other	
+No.
+Free 1/		27.5%
+8701.94	 	Exceeding 75 kW but not exceeding 130 kW:				
+8701.94.10	00  	Suitable for agricultural use	
+No.
+Free 1/		Free
+8701.94.50	00  	Other	
+No.
+Free 1/		27.5% 1/
+8701.95	 	Exceeding 130 kW:				
+8701.95.10	00  	Suitable for agricultural use	
+No.
+Free 1/		Free 1/
+8701.95.50	00  	Other	
+No.
+Free 1/		27.5%
+8702	 	Motor vehicles for the transport of ten or more persons, including the driver:				
+8702.10	 	With only compression-ignition internal combustion piston engine (diesel or semi-diesel):				
+8702.10.31	00  	Designed for the transport of 16 or more persons, including the driver	
+No.
+2% 1/	Free (A*, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.10.61	00  	Other	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.20	 	With both compression-ignition internal combustion piston engine (diesel or semi-diesel) and electric motor as motors for propulsion:				
+8702.20.31	00  	Designed for the transport of 16 or more persons, including the driver	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.20.61	00  	Other	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.30	 	With both spark-ignition internal combustion piston engine and electric motor as motors for propulsion:				
+8702.30.31	00  	Designed for the transport of 16 or more persons, including the driver	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.30.61	00  	Other	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.40	 	With only electric motor for propulsion:				
+8702.40.31	00  	Designed for the transport of 16 or more persons, including the driver	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.40.61	00  	Other	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.90	 	Other:				
+8702.90.31	00  	Designed for the transport of 16 or more persons, including the driver	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8702.90.61	00  	Other	
+No.
+2% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	25%
+8703	 	Motor cars and other motor vehicles principally designed for the transport of persons (other than those of heading 8702), including station wagons and racing cars:				
+8703.10	 	Vehicles specially designed for traveling on snow; golf carts and similar vehicles:				
+8703.10.10	00  	Vehicles specially designed for traveling on snow	
+No.  
+2.5% 1/	Free (A+, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	10%
+8703.10.50	 	Other		2.5% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	10% 1/
+8703.10.50.30	30  	Golf carts	
+No.
+8703.10.50.60	60  	Other	
+No.
+ 	Other vehicles, with only spark-ignition internal combustion piston engines:				
+8703.21.01	 	Of a cylinder capacity not exceeding 1,000 cc		2.5% 1/	Free (A+, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	10% 1/
+"""
+
+# 转换为DataFrame
+df = pd.read_csv(pd.compat.StringIO(raw_data), 
+                 sep='\t', 
+                 header=None,
+                 names=['HS Code', 'Description', 'MFN', 'Special', 'ADCVD'])
+#税率提取
+df['MFN Rate'] = df['MFN'].apply(lambda x: float(str(x).split('%')[0]) if '%' in str(x) else 0.0)
+df['USMCA Rate'] = df['Special'].apply(lambda x: 0.0 if 'Free' in str(x) and any(c in str(x) for c in ['MX','CA','US']) else None)
+df['Anti-Dumping'] = df['ADCVD'].apply(lambda x: float(str(x).replace('%','')) if '%' in str(x) else 0.0)
