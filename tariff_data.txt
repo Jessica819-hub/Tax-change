@@ -1,7 +1,4 @@
-import pandas as pd
-
-# 原始数据格式转换（示例片段）
-raw_data = """
+8701	 	Tractors (other than tractors of heading 8709):				
 8701.10.01	00  	Single axle tractors	
 No.
 Free 1/		Free 1/
@@ -317,7 +314,7 @@ No.
 8703	 	Motor cars and other motor vehicles principally designed for the transport of persons (other than those of heading 8702), including station wagons and racing cars:				
 8703.10	 	Vehicles specially designed for traveling on snow; golf carts and similar vehicles:				
 8703.10.10	00  	Vehicles specially designed for traveling on snow	
-No.  
+No.
 2.5% 1/	Free (A+, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	10%
 8703.10.50	 	Other		2.5% 1/	Free (A, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	10% 1/
 8703.10.50.30	30  	Golf carts	
@@ -326,14 +323,3 @@ No.
 No.
  	Other vehicles, with only spark-ignition internal combustion piston engines:				
 8703.21.01	 	Of a cylinder capacity not exceeding 1,000 cc		2.5% 1/	Free (A+, AU, B, BH, CL, CO, D, E, IL, JO, KR, MA, OM, P, PA, PE, S, SG)	10% 1/
-"""
-
-# 转换为DataFrame
-df = pd.read_csv(pd.compat.StringIO(raw_data), 
-                 sep='\t', 
-                 header=None,
-                 names=['HS Code', 'Description', 'MFN', 'Special', 'ADCVD'])
-#税率提取
-df['MFN Rate'] = df['MFN'].apply(lambda x: float(str(x).split('%')[0]) if '%' in str(x) else 0.0)
-df['USMCA Rate'] = df['Special'].apply(lambda x: 0.0 if 'Free' in str(x) and any(c in str(x) for c in ['MX','CA','US']) else None)
-df['Anti-Dumping'] = df['ADCVD'].apply(lambda x: float(str(x).replace('%','')) if '%' in str(x) else 0.0)
